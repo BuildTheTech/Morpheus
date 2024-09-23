@@ -65,7 +65,7 @@ contract Morpheus is ERC20Burnable {
         address _titanX,
         address _dragonX,
         address _owner
-    ) payable ERC20("MORPHEUS", "INF") {
+    ) payable ERC20("MORPHEUS", "MORPH") {
         dragonXMorpheusPool = _createDragonXMorpheusPool(_dragonX, _titanX, _dragonXTitanXPool);
 
         buyAndBurn = new MorpheusBuyAndBurn(_morpheusBuyAndBurnStartTimestamp, _dragonXTitanXPool, _titanX, _dragonX, _owner);
