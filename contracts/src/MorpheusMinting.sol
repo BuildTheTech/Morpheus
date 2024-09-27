@@ -13,6 +13,8 @@ import {Morpheus} from "./Morpheus.sol";
 /* === CONST === */
 import "./const/BuyAndBurnConst.sol";
 
+interface DragonXVault {}
+
 /**
  * @title MorpheusMinting
  * @author 0xkmmm
@@ -31,7 +33,7 @@ contract MorpheusMinting {
     uint256 constant STARTING_RATIO = 1e18;
 
     ///@notice The gap between mint cycles
-    uint32 public constant GAP_BETWEEN_CYCLE = 1 weeks;
+    uint32 public constant GAP_BETWEEN_CYCLE = 2 days;
 
     ///@notice  The final mint cycle
     uint8 public constant MAX_MINT_CYCLE = 8;
@@ -58,7 +60,8 @@ contract MorpheusMinting {
     ///@notice The start of the first minting cycle
 
     ///@notice Mapping of the users amount to claim in a mint cycle
-    mapping(address user => mapping(uint32 cycleId => uint256 amount)) public amountToClaim;
+    mapping(address user => mapping(uint32 cycleId => uint256 amount))
+        public amountToClaim;
 
     /* == ERRORS == */
 
@@ -72,10 +75,18 @@ contract MorpheusMinting {
     /* == EVENTS === */
 
     ///@notice Emits when user mints for a cycle
-    event MintExecuted(address indexed user, uint256 morpheusAmount, uint32 indexed mintCycleId);
+    event MintExecuted(
+        address indexed user,
+        uint256 morpheusAmount,
+        uint32 indexed mintCycleId
+    );
 
     ///@notice Emits when user claims for a cycle
-    event ClaimExecuted(address indexed user, uint256 morpheusAmount, uint8 indexed mintCycleId);
+    event ClaimExecuted(
+        address indexed user,
+        uint256 morpheusAmount,
+        uint8 indexed mintCycleId
+    );
 
     /* == CONSTRUCTOR == */
 
@@ -86,7 +97,11 @@ contract MorpheusMinting {
      * @param _startTimestamp The time stamp of the first minting cycle
      * @notice Constructor is payable to save gas
      */
-    constructor(address _buyAndBurn, address _titanX, uint32 _startTimestamp) payable {
+    constructor(
+        address _buyAndBurn,
+        address _titanX,
+        uint32 _startTimestamp
+    ) payable {
         if (_buyAndBurn == address(0)) revert InvalidInput();
 
         // bool is2PmUTC = (_startTimestamp % 1 days) == 14 hours;
@@ -102,9 +117,13 @@ contract MorpheusMinting {
 
     /* == EXTERNAL == */
 
-    function getRatioForCycle(uint32 cycleId) public pure returns (uint256 ratio) {
+    function getRatioForCycle(
+        uint32 cycleId
+    ) public pure returns (uint256 ratio) {
         unchecked {
-            uint256 adjustedRatioDiscount = cycleId == 1 ? 0 : uint256(cycleId - 1) * 5e16;
+            uint256 adjustedRatioDiscount = cycleId == 1
+                ? 0
+                : uint256(cycleId - 1) * 5e16;
             ratio = STARTING_RATIO - adjustedRatioDiscount;
         }
     }
@@ -118,12 +137,13 @@ contract MorpheusMinting {
 
         if (block.timestamp < startTimestamp) revert NotStartedYet();
 
-        (uint32 currentCycle,, uint32 endsAt) = getCurrentMintCycle();
+        (uint32 currentCycle, , uint32 endsAt) = getCurrentMintCycle();
 
         if (block.timestamp > endsAt) revert CycleIsOver();
 
         uint256 adjustedAmount = _burnAndSendToGenesis(_amount);
-        uint256 morpheusAmount = (_amount * getRatioForCycle(currentCycle)) / 1e18;
+        uint256 morpheusAmount = (_amount * getRatioForCycle(currentCycle)) /
+            1e18;
 
         amountToClaim[msg.sender][currentCycle] += morpheusAmount;
 
@@ -140,7 +160,8 @@ contract MorpheusMinting {
      * @param _cycleId The ID of the mint cycle to claim tokens from.
      */
     function claim(uint8 _cycleId) external {
-        if (_getCycleEndTime(_cycleId) > block.timestamp) revert CycleStillOngoing();
+        if (_getCycleEndTime(_cycleId) > block.timestamp)
+            revert CycleStillOngoing();
 
         uint256 toClaim = amountToClaim[msg.sender][_cycleId];
 
@@ -157,17 +178,31 @@ contract MorpheusMinting {
 
     /* == INTERNAL/PRIVATE == */
 
-    function _burnAndSendToGenesis(uint256 _amount) internal returns (uint256 newAmount) {
+    function _burnAndSendToGenesis(
+        uint256 _amount
+    ) internal returns (uint256 newAmount) {
         if (!buyAndBurn.liquidityAdded()) return _amount;
 
         unchecked {
-            uint256 titanXForGenesis = _amount.mulDiv(GENESIS_BPS, BPS_DENOM, Math.Rounding.Ceil);
-            uint256 titanXToBurn = _amount.mulDiv(TITAN_X_BURN_BPS, BPS_DENOM, Math.Rounding.Ceil);
+            uint256 titanXForGenesis = _amount.mulDiv(
+                GENESIS_BPS,
+                BPS_DENOM,
+                Math.Rounding.Ceil
+            );
+            uint256 titanXToVault = _amount.mulDiv(
+                TITAN_X_VAULT_BPS,
+                BPS_DENOM,
+                Math.Rounding.Ceil
+            );
 
             newAmount = _amount - titanXForGenesis - titanXToBurn;
 
-            titanX.safeTransferFrom(msg.sender, DEAD_ADDR, titanXToBurn);
-            titanX.safeTransferFrom(msg.sender, GENESIS_WALLET, titanXForGenesis);
+            titanX.safeTransferFrom(msg.sender, DRAGON_X_ADDRESS, titanXToBurn);
+            titanX.safeTransferFrom(
+                msg.sender,
+                GENESIS_WALLET,
+                titanXForGenesis
+            );
         }
     }
 
@@ -178,7 +213,11 @@ contract MorpheusMinting {
         buyAndBurn.distributeTitanXForBurning(_amount);
     }
 
-    function getCurrentMintCycle() public view returns (uint32 currentCycle, uint32 startsAt, uint32 endsAt) {
+    function getCurrentMintCycle()
+        public
+        view
+        returns (uint32 currentCycle, uint32 startsAt, uint32 endsAt)
+    {
         uint32 timeElapsedSince = uint32(block.timestamp - startTimestamp);
 
         currentCycle = uint8(timeElapsedSince / GAP_BETWEEN_CYCLE) + 1;
@@ -190,8 +229,11 @@ contract MorpheusMinting {
         endsAt = startsAt + MINT_CYCLE_DURATION;
     }
 
-    function _getCycleEndTime(uint8 cycleNumber) internal view returns (uint32 endsAt) {
-        uint32 cycleStartTime = startTimestamp + ((cycleNumber - 1) * GAP_BETWEEN_CYCLE);
+    function _getCycleEndTime(
+        uint8 cycleNumber
+    ) internal view returns (uint32 endsAt) {
+        uint32 cycleStartTime = startTimestamp +
+            ((cycleNumber - 1) * GAP_BETWEEN_CYCLE);
 
         endsAt = cycleStartTime + MINT_CYCLE_DURATION;
     }

@@ -4,15 +4,16 @@ pragma solidity 0.8.26;
 uint256 constant INCENTIVE_FEE = 150;
 
 address constant TITAN_X_ADDRESS = 0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1;
-address constant BLAZE_ADDRESS = 0xfcd7cceE4071aA4ecFAC1683b7CC0aFeCAF42A36;
+address constant DRAGON_X_ADDRESS = 0xfcd7cceE4071aA4ecFAC1683b7CC0aFeCAF42A36;
 
 address constant GENESIS_WALLET = 0x84C17675a19Be90788CbC7d455B2aeb7Ebf650B4;
 
 address constant DEAD_ADDR = 0x000000000000000000000000000000000000dEaD;
 
-uint256 constant GENESIS_BPS = 200;
-uint256 constant TITAN_X_BURN_BPS = 800;
-uint256 constant INFERNO_SELL_TAX_BPS = 500;
+uint256 constant GENESIS_BPS = 800;
+uint256 constant TITAN_X_VAULT_BPS = 2000;
+uint256 constant DRAGON_X_BURN_BPS = 2000;
+uint256 constant MORPHEUS_SELL_TAX_BPS = 500;
 uint256 constant BPS_DENOM = 10_000;
 
 /// @dev 28 * 51 = 24 hours
@@ -22,7 +23,7 @@ uint32 constant INTERVAL_TIME = 30 minutes;
 ///@dev  The initial titan x amount needed to create liquidity pool
 uint256 constant INITIAL_TITAN_X_FOR_LIQ = 50_000_000_000e18;
 
-///@dev The intial Inferno that pairs with the blaze received from the swap
+///@dev The intial Morpheus that pairs with the dragonX received from the swap
 uint256 constant INITIAL_LP_MINT = 50_000_000_000e18;
 
 /* === UNIV3 === */
@@ -36,7 +37,7 @@ int24 constant TICK_SPACING = 200; // Uniswap's tick spacing for 1% pools is 200
 /* === UNIV2 === */
 address constant UNISWAP_V2_FACTORY = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
 address constant UNISWAP_V2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-address constant UNISWAP_V2_BLAZE_TITAN_X_POOL = 0x4D3A10d4792Dd12ececc5F3034C8e264B28485d1;
+address constant UNISWAP_V2_DRAGON_X_TITAN_X_POOL = 0x4D3A10d4792Dd12ececc5F3034C8e264B28485d1;
 
 /* === SEPOLIAAA ==== */
 

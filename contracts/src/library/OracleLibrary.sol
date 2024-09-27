@@ -2,10 +2,10 @@
 pragma solidity 0.8.26;
 
 // Uniswap
-import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import {IUniswapV3Pool} from "../../lib/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 
 // OpenZeppelin
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {Math} from "../../lib/openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 /**
  * @notice Adapted Uniswap V3 OracleLibrary computation to be compliant with Solidity 0.8.x and later.
@@ -69,7 +69,10 @@ library OracleLibrary {
     /// @param secondsAgo Number of seconds in the past from which to calculate the time-weighted means
     /// @return arithmeticMeanTick The arithmetic mean tick from (block.timestamp - secondsAgo) to block.timestamp
     /// @return harmonicMeanLiquidity The harmonic mean liquidity from (block.timestamp - secondsAgo) to block.timestamp
-    function consult(address pool, uint32 secondsAgo)
+    function consult(
+        address pool,
+        uint32 secondsAgo
+    )
         internal
         view
         returns (int24 arithmeticMeanTick, uint128 harmonicMeanLiquidity)
@@ -80,40 +83,58 @@ library OracleLibrary {
         secondsAgos[0] = secondsAgo;
         secondsAgos[1] = 0;
 
-        (int56[] memory tickCumulatives, uint160[] memory secondsPerLiquidityCumulativeX128s) =
-            IUniswapV3Pool(pool).observe(secondsAgos);
+        (
+            int56[] memory tickCumulatives,
+            uint160[] memory secondsPerLiquidityCumulativeX128s
+        ) = IUniswapV3Pool(pool).observe(secondsAgos);
 
         int56 tickCumulativesDelta = tickCumulatives[1] - tickCumulatives[0];
-        uint160 secondsPerLiquidityCumulativesDelta =
-            secondsPerLiquidityCumulativeX128s[1] - secondsPerLiquidityCumulativeX128s[0];
+        uint160 secondsPerLiquidityCumulativesDelta = secondsPerLiquidityCumulativeX128s[
+                1
+            ] - secondsPerLiquidityCumulativeX128s[0];
 
         // Safe casting of secondsAgo to int56 for division
         int56 secondsAgoInt56 = int56(uint56(secondsAgo));
         arithmeticMeanTick = int24(tickCumulativesDelta / secondsAgoInt56);
         // Always round to negative infinity
-        if (tickCumulativesDelta < 0 && (tickCumulativesDelta % secondsAgoInt56 != 0)) arithmeticMeanTick--;
+        if (
+            tickCumulativesDelta < 0 &&
+            (tickCumulativesDelta % secondsAgoInt56 != 0)
+        ) arithmeticMeanTick--;
 
         // Safe casting of secondsAgo to uint192 for multiplication
         uint192 secondsAgoUint192 = uint192(secondsAgo);
         harmonicMeanLiquidity = uint128(
-            (secondsAgoUint192 * uint192(type(uint160).max)) / (uint192(secondsPerLiquidityCumulativesDelta) << 32)
+            (secondsAgoUint192 * uint192(type(uint160).max)) /
+                (uint192(secondsPerLiquidityCumulativesDelta) << 32)
         );
     }
 
     /// @notice Given a pool, it returns the number of seconds ago of the oldest stored observation
     /// @param pool Address of Uniswap V3 pool that we want to observe
     /// @return secondsAgo The number of seconds ago of the oldest observation stored for the pool
-    function getOldestObservationSecondsAgo(address pool) internal view returns (uint32 secondsAgo) {
-        (,, uint16 observationIndex, uint16 observationCardinality,,,) = IUniswapV3Pool(pool).slot0();
+    function getOldestObservationSecondsAgo(
+        address pool
+    ) internal view returns (uint32 secondsAgo) {
+        (
+            ,
+            ,
+            uint16 observationIndex,
+            uint16 observationCardinality,
+            ,
+            ,
+
+        ) = IUniswapV3Pool(pool).slot0();
         require(observationCardinality > 0, "NI");
 
-        (uint32 observationTimestamp,,, bool initialized) =
-            IUniswapV3Pool(pool).observations((observationIndex + 1) % observationCardinality);
+        (uint32 observationTimestamp, , , bool initialized) = IUniswapV3Pool(
+            pool
+        ).observations((observationIndex + 1) % observationCardinality);
 
         // The next index might not be initialized if the cardinality is in the process of increasing
         // In this case the oldest observation is always in index 0
         if (!initialized) {
-            (observationTimestamp,,,) = IUniswapV3Pool(pool).observations(0);
+            (observationTimestamp, , , ) = IUniswapV3Pool(pool).observations(0);
         }
 
         secondsAgo = uint32(block.timestamp) - observationTimestamp;
@@ -126,11 +147,12 @@ library OracleLibrary {
     /// @param baseToken Address of an ERC20 token contract used as the baseAmount denomination
     /// @param quoteToken Address of an ERC20 token contract used as the quoteAmount denomination
     /// @return quoteAmount Amount of quoteToken received for baseAmount of baseToken
-    function getQuoteForSqrtRatioX96(uint160 sqrtRatioX96, uint256 baseAmount, address baseToken, address quoteToken)
-        internal
-        pure
-        returns (uint256 quoteAmount)
-    {
+    function getQuoteForSqrtRatioX96(
+        uint160 sqrtRatioX96,
+        uint256 baseAmount,
+        address baseToken,
+        address quoteToken
+    ) internal pure returns (uint256 quoteAmount) {
         // Calculate quoteAmount with better precision if it doesn't overflow when multiplied by itself
         if (sqrtRatioX96 <= type(uint128).max) {
             uint256 ratioX192 = uint256(sqrtRatioX96) * sqrtRatioX96;
@@ -138,7 +160,11 @@ library OracleLibrary {
                 ? Math.mulDiv(ratioX192, baseAmount, 1 << 192)
                 : Math.mulDiv(1 << 192, baseAmount, ratioX192);
         } else {
-            uint256 ratioX128 = Math.mulDiv(sqrtRatioX96, sqrtRatioX96, 1 << 64);
+            uint256 ratioX128 = Math.mulDiv(
+                sqrtRatioX96,
+                sqrtRatioX96,
+                1 << 64
+            );
             quoteAmount = baseToken < quoteToken
                 ? Math.mulDiv(ratioX128, baseAmount, 1 << 128)
                 : Math.mulDiv(1 << 128, baseAmount, ratioX128);
