@@ -13,8 +13,6 @@ import {Morpheus} from "./Morpheus.sol";
 /* === CONST === */
 import "./const/BuyAndBurnConst.sol";
 
-interface DragonXVault {}
-
 /**
  * @title MorpheusMinting
  * @author 0xkmmm
