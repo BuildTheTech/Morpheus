@@ -66,10 +66,24 @@ contract Morpheus is ERC20Burnable {
         address _dragonX,
         address _owner
     ) payable ERC20("MORPHEUS", "MORPH") {
-        dragonXMorpheusPool = _createDragonXMorpheusPool(_dragonX, _titanX, _dragonXTitanXPool);
+        dragonXMorpheusPool = _createDragonXMorpheusPool(
+            _dragonX,
+            _titanX,
+            _dragonXTitanXPool
+        );
 
-        buyAndBurn = new MorpheusBuyAndBurn(_morpheusBuyAndBurnStartTimestamp, _dragonXTitanXPool, _titanX, _dragonX, _owner);
-        minting = new MorpheusMinting(address(buyAndBurn), _titanX, _morpheusMintingStartTimestamp);
+        buyAndBurn = new MorpheusBuyAndBurn(
+            _morpheusBuyAndBurnStartTimestamp,
+            _dragonXTitanXPool,
+            _titanX,
+            _dragonX,
+            _owner
+        );
+        minting = new MorpheusMinting(
+            address(buyAndBurn),
+            _titanX,
+            _morpheusMintingStartTimestamp
+        );
     }
 
     /* == MODIFIERS == */
@@ -119,30 +133,47 @@ contract Morpheus is ERC20Burnable {
 
     ///@notice - Creates the DRAGONX/MORPHEUS Pool on uniswapV3
     ///@notice - Only called inside of the constructor and never again
-    function _createDragonXMorpheusPool(address _dragonX, address _titanX, address _dragonXTitanXPool)
-        internal
-        returns (address pool)
-    {
+    function _createDragonXMorpheusPool(
+        address _dragonX,
+        address _titanX,
+        address _dragonXTitanXPool
+    ) internal returns (address pool) {
         address _morpheus = address(this);
 
-        (uint112 res0, uint112 res1,) = IUniswapV2Pair(_dragonXTitanXPool).getReserves();
+        (uint112 res0, uint112 res1, ) = IUniswapV2Pair(_dragonXTitanXPool)
+            .getReserves();
         address token0V2 = IUniswapV2Pair(_dragonXTitanXPool).token0();
 
-        (uint112 resIn, uint112 resOut) = token0V2 == _titanX ? (res0, res1) : (res1, res0);
+        (uint112 resIn, uint112 resOut) = token0V2 == _titanX
+            ? (res0, res1)
+            : (res1, res0);
 
-        uint256 dragonXAmount = IUniswapV2Router02(UNISWAP_V2_ROUTER).getAmountOut(INITIAL_TITAN_X_FOR_LIQ, resIn, resOut);
+        uint256 dragonXAmount = IUniswapV2Router02(UNISWAP_V2_ROUTER)
+            .getAmountOut(INITIAL_DRAGON_X_FOR_LIQ, resIn, resOut);
         uint256 morpheusAmount = INITIAL_LP_MINT;
 
-        (address token0, address token1) = _dragonX < _morpheus ? (_dragonX, _morpheus) : (_morpheus, _dragonX);
+        (address token0, address token1) = _dragonX < _morpheus
+            ? (_dragonX, _morpheus)
+            : (_morpheus, _dragonX);
 
-        (uint256 amount0, uint256 amount1) =
-            token0 == _dragonX ? (dragonXAmount, morpheusAmount) : (morpheusAmount, dragonXAmount);
+        (uint256 amount0, uint256 amount1) = token0 == _dragonX
+            ? (dragonXAmount, morpheusAmount)
+            : (morpheusAmount, dragonXAmount);
 
-        uint160 sqrtPriceX96 = uint160((Math.sqrt((amount1 * 1e18) / amount0) * 2 ** 96) / 1e9);
+        uint160 sqrtPriceX96 = uint160(
+            (Math.sqrt((amount1 * 1e18) / amount0) * 2 ** 96) / 1e9
+        );
 
-        INonfungiblePositionManager manager = INonfungiblePositionManager(UNISWAP_V3_POSITION_MANAGER);
+        INonfungiblePositionManager manager = INonfungiblePositionManager(
+            UNISWAP_V3_POSITION_MANAGER
+        );
 
-        pool = manager.createAndInitializePoolIfNecessary(token0, token1, POOL_FEE, sqrtPriceX96);
+        pool = manager.createAndInitializePoolIfNecessary(
+            token0,
+            token1,
+            POOL_FEE,
+            sqrtPriceX96
+        );
 
         IUniswapV3Pool(pool).increaseObservationCardinalityNext(uint16(100));
     }

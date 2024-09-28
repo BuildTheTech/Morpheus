@@ -20,8 +20,8 @@ uint256 constant BPS_DENOM = 10_000;
 uint256 constant INTERVALS_PER_DAY = 48;
 uint32 constant INTERVAL_TIME = 30 minutes;
 
-///@dev  The initial titan x amount needed to create liquidity pool
-uint256 constant INITIAL_TITAN_X_FOR_LIQ = 50_000_000_000e18;
+///@dev  The initial dragonX amount needed to create liquidity pool
+uint256 constant INITIAL_DRAGON_X_FOR_LIQ = 50_000_000_000e18;
 
 ///@dev The intial Morpheus that pairs with the dragonX received from the swap
 uint256 constant INITIAL_LP_MINT = 50_000_000_000e18;
