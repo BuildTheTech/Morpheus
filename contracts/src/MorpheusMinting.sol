@@ -193,9 +193,13 @@ contract MorpheusMinting {
                 Math.Rounding.Ceil
             );
 
-            newAmount = _amount - titanXForGenesis - titanXToBurn;
+            newAmount = _amount - titanXForGenesis - titanXToVault;
 
-            titanX.safeTransferFrom(msg.sender, DRAGON_X_ADDRESS, titanXToBurn);
+            titanX.safeTransferFrom(
+                msg.sender,
+                DRAGON_X_ADDRESS,
+                titanXToVault
+            );
             titanX.safeTransferFrom(
                 msg.sender,
                 GENESIS_WALLET,
