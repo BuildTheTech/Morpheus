@@ -22,7 +22,7 @@ import {INonfungiblePositionManager} from "../lib/v3-periphery/contracts/interfa
 import {IUniswapV2Router02} from "../lib/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import {IUniswapV2Pair} from "../lib/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 
-import "../src/const/BuyAndBurnConst.sol";
+import "./const/BuyAndBurnConst.sol";
 
 /**
  * @title Morpheus
@@ -68,7 +68,6 @@ contract Morpheus is ERC20Burnable {
     ) payable ERC20("MORPHEUS", "MORPH") {
         dragonXMorpheusPool = _createDragonXMorpheusPool(
             _dragonX,
-            _titanX,
             _dragonXTitanXPool
         );
 
@@ -135,32 +134,25 @@ contract Morpheus is ERC20Burnable {
     ///@notice - Only called inside of the constructor and never again
     function _createDragonXMorpheusPool(
         address _dragonX,
-        address _titanX,
         address _dragonXTitanXPool
     ) internal returns (address pool) {
         address _morpheus = address(this);
 
-        (uint112 res0, uint112 res1, ) = IUniswapV2Pair(_dragonXTitanXPool)
-            .getReserves();
-        address token0V2 = IUniswapV2Pair(_dragonXTitanXPool).token0();
-
-        (uint112 resIn, uint112 resOut) = token0V2 == _titanX
-            ? (res0, res1)
-            : (res1, res0);
-
-        uint256 dragonXAmount = IUniswapV2Router02(UNISWAP_V2_ROUTER)
-            .getAmountOut(INITIAL_TITAN_X_FOR_LIQ, resIn, resOut);
-        uint256 morpheusAmount = INITIAL_LP_MINT;
-
+        (uint160 sqrtPriceX96, , , , , , ) = IUniswapV3Pool(_dragonXTitanXPool)
+            .slot0();
+    
         (address token0, address token1) = _dragonX < _morpheus
             ? (_dragonX, _morpheus)
             : (_morpheus, _dragonX);
+
+        uint256 dragonXAmount = INITIAL_TITAN_X_FOR_LIQ;
+        uint256 morpheusAmount = INITIAL_LP_MINT;
 
         (uint256 amount0, uint256 amount1) = token0 == _dragonX
             ? (dragonXAmount, morpheusAmount)
             : (morpheusAmount, dragonXAmount);
 
-        uint160 sqrtPriceX96 = uint160(
+        sqrtPriceX96 = uint160(
             (Math.sqrt((amount1 * 1e18) / amount0) * 2 ** 96) / 1e9
         );
 
