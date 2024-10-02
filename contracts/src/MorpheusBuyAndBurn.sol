@@ -33,6 +33,7 @@ import {Morpheus} from "./Morpheus.sol";
  */
 contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
     using TransferHelper for IERC20;
+    using Math for uint256;
     /* == STRUCTS == */
 
     /// @notice Struct to represent intervals for burning
@@ -55,10 +56,10 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
     /* == IMMUTABLE == */
 
     /// @notice Uniswap V2 pool for Dragonx/TitanX tokens
-    IUniswapV2Pair private immutable dragonxTitanXPool;
+    IUniswapV2Pair private immutable dragonXTitanXPool;
 
-    /// @notice Dragonx token contract
-    ERC20Burnable private immutable dragonx;
+    /// @notice DragonX token contract
+    ERC20Burnable private immutable dragonX;
 
     /// @notice TitanX token contract
     IERC20 private immutable titanX;
@@ -94,6 +95,7 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
 
     ///@notice The slippage for the second swap in the buy and burn in %
     uint8 dragonxToMorpheusSlippage = 90;
+    uint8 titanxToDragonxSlippage = 90;
 
     /* == EVENTS == */
 
@@ -101,6 +103,7 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
     event BuyAndBurn(
         uint256 indexed titanXAmount,
         uint256 indexed morpheusBurnt,
+        uint256 dragonXBurnAmount,
         address indexed caller
     );
 
@@ -133,16 +136,16 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
     /// @notice Constructor is payable to save gas
     constructor(
         uint32 startTimestamp,
-        address _dragonxTitanXPool,
+        address _dragonXTitanXPool,
         address _titanX,
-        address _dragonx,
+        address _dragonX,
         address _owner
     ) payable Ownable(_owner) {
         startTimeStamp = startTimestamp;
         titanX = IERC20(_titanX);
         morpheusToken = Morpheus(msg.sender);
-        dragonx = ERC20Burnable(_dragonx);
-        dragonxTitanXPool = IUniswapV2Pair(_dragonxTitanXPool);
+        dragonX = ERC20Burnable(_dragonX);
+        dragonXTitanXPool = IUniswapV2Pair(_dragonXTitanXPool);
     }
 
     /* === MODIFIERS === */
@@ -157,11 +160,9 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
 
     /**
      * @notice Swaps TitanX for Morpheus and burns the Morpheus tokens
-     * @param _amountDragonxMin Minimum amount of Dragonx tokens expected
      * @param _deadline The deadline for which the passes should pass
      */
     function swapTitanXForMorpheusAndDragonXAndBurn(
-        uint256 _amountDragonxMin,
         uint32 _deadline
     ) external nonReentrant intervalUpdate {
         if (!liquidityAdded) revert NotStartedYet();
@@ -177,7 +178,6 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
 
         uint256 dragonxAmount = _swapTitanForDragonx(
             titanXToSwapAndBurn,
-            _amountDragonxMin,
             _deadline
         );
         uint256 burnAmount = dragonxAmount.mulDiv(
@@ -195,17 +195,15 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
         TransferHelper.safeTransfer(address(dragonX), DEAD_ADDR, burnAmount);
         TransferHelper.safeTransfer(address(titanX), msg.sender, incentive);
 
-        emit BuyAndBurn(titanXToSwapAndBurn, morpheusAmount, msg.sender);
+        emit BuyAndBurn(titanXToSwapAndBurn, morpheusAmount, burnAmount, msg.sender);
     }
 
     /**
      * @notice Creates a Uniswap V3 pool and adds liquidity
      * @param _deadline The deadline for the liquidity addition
-     * @param _amountDragonxMin Minimum amount of TitanX tokens expected
      */
     function addLiquidityToMorpheusDragonxPool(
-        uint32 _deadline,
-        uint256 _amountDragonxMin
+        uint32 _deadline
     ) external onlyOwner {
         if (liquidityAdded) revert LiquidityAlreadyAdded();
         if (titanX.balanceOf(address(this)) < INITIAL_TITAN_X_FOR_LIQ)
@@ -215,7 +213,6 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
 
         uint256 dragonxReceived = _swapTitanForDragonx(
             INITIAL_TITAN_X_FOR_LIQ,
-            _amountDragonxMin,
             _deadline
         );
 
@@ -254,7 +251,7 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
 
         lp = LP({
             tokenId: uint248(tokenId),
-            isDragonxToken0: token0 == address(dragonx)
+            isDragonxToken0: token0 == address(dragonX)
         });
 
         totalTitanXDistributed = titanX.balanceOf(address(this));
@@ -274,6 +271,14 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
         if (_newSlippage > 100 || _newSlippage < 2) revert InvalidInput();
 
         dragonxToMorpheusSlippage = _newSlippage;
+    }
+
+    function setSlippageForTitanxToDragonx(
+        uint8 _newSlippage
+    ) external onlyOwner {
+        if (_newSlippage > 100 || _newSlippage < 2) revert InvalidInput();
+
+        titanxToDragonxSlippage = _newSlippage;
     }
 
     /**
@@ -326,7 +331,7 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
             ? (amount0, amount1)
             : (amount1, amount0);
 
-        dragonx.transfer(GENESIS_WALLET, dragonxAmount);
+        dragonX.transfer(GENESIS_WALLET, dragonxAmount);
         burnMorpheus();
     }
 
@@ -390,6 +395,37 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
             dailyBPSAllocation = 1000;
         }
     }
+    
+    /**
+     * @notice Gets a quote for Morpheus tokens in exchange for Dragonx tokens
+     * @param baseAmount The amount of Dragonx tokens
+     * @return quote The amount of Morpheus tokens received
+     */
+    function getDragonxQuoteForTitanX(
+        uint256 baseAmount
+    ) public view returns (uint256 quote) {
+        address poolAddress = UNISWAP_V3_DRAGON_X_TITAN_X_POOL;
+        uint32 secondsAgo = 15 * 60;
+        uint32 oldestObservation = OracleLibrary.getOldestObservationSecondsAgo(
+            poolAddress
+        );
+
+        if (oldestObservation < secondsAgo) secondsAgo = oldestObservation;
+
+        (int24 arithmeticMeanTick, ) = OracleLibrary.consult(
+            poolAddress,
+            secondsAgo
+        );
+
+        uint160 sqrtPriceX96 = TickMath.getSqrtRatioAtTick(arithmeticMeanTick);
+
+        quote = OracleLibrary.getQuoteForSqrtRatioX96(
+            sqrtPriceX96,
+            baseAmount,
+            address(titanX),
+            address(dragonX)
+        );
+    }
 
     /**
      * @notice Gets a quote for Morpheus tokens in exchange for Dragonx tokens
@@ -417,63 +453,51 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
         quote = OracleLibrary.getQuoteForSqrtRatioX96(
             sqrtPriceX96,
             baseAmount,
-            address(dragonx),
+            address(dragonX),
             address(morpheusToken)
         );
-    }
-
-    /**
-     * @notice Gets a quote for Dragonx tokens in exchange for TitanX tokens
-     * @param titanXAmount The amount of TitanX tokens
-     * @return quote The amount of Dragonx tokens received
-     */
-    function getDragonxQuoteForTitanX(
-        uint256 titanXAmount
-    ) external view returns (uint256 quote) {
-        IUniswapV2Pair pair = dragonxTitanXPool;
-
-        (uint112 reserve0, uint112 reserve1, ) = pair.getReserves();
-
-        ///@dev TitanX is token0 in the TitanX/Dragonx pool
-        quote = (titanXAmount * reserve1) / reserve0;
     }
 
     /* == INTERNAL/PRIVATE == */
 
     /**
-     * @notice Swaps TitanX tokens for Dragonx tokens
-     * @param amountTitan The amount of TitanX tokens
-     * @param amountDragonxMin Minimum amount of Dragonx tokens expected
-     * @return _dragonxAmount The amount of Dragonx tokens received
+     * @notice Swaps Dragonx tokens for Morpheus tokens
+     * @param amountTitanx The amount of Dragonx tokens
+     * @param _deadline The deadline for when the swap must be executed
      */
     function _swapTitanForDragonx(
-        uint256 amountTitan,
-        uint256 amountDragonxMin,
+        uint256 amountTitanx,
         uint256 _deadline
-    ) private returns (uint256 _dragonxAmount) {
-        TransferHelper.safeApprove(
+    ) private returns (uint256 _titanAmount) {
+        // wake-disable-next-line
+        titanX.approve(UNISWAP_V3_ROUTER, amountTitanx);
+        // Setup the swap-path, swapp
+        bytes memory path = abi.encodePacked(
             address(titanX),
-            UNISWAP_V2_ROUTER,
-            amountTitan
+            POOL_FEE,
+            address(dragonX)
         );
 
-        address[] memory path = new address[](2);
-        path[0] = address(titanX);
-        path[1] = address(dragonx);
+        uint256 expectedDragonxAmount = getDragonxQuoteForTitanX(
+            amountTitanx
+        );
 
-        uint256[] memory returnedOutputAmounts = IUniswapV2Router02(
-            UNISWAP_V2_ROUTER
-        ).swapExactTokensForTokens(
-                amountTitan,
-                amountDragonxMin,
-                path,
-                address(this),
-                _deadline
-            );
+        // Adjust for slippage (applied uniformly across both hops)
+        uint256 adjustedDragonxAmount = (expectedDragonxAmount *
+            (100 - titanxToDragonxSlippage)) / 100;
 
-        _dragonxAmount = returnedOutputAmounts[
-            returnedOutputAmounts.length - 1
-        ];
+        // Swap parameters
+        ISwapRouter.ExactInputParams memory params = ISwapRouter
+            .ExactInputParams({
+                path: path,
+                recipient: address(this),
+                deadline: _deadline,
+                amountIn: amountTitanx,
+                amountOutMinimum: adjustedDragonxAmount
+            });
+
+        // Execute the swap
+        return ISwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
     }
 
     /**
@@ -487,10 +511,10 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
         uint256 _deadline
     ) private returns (uint256 _titanAmount) {
         // wake-disable-next-line
-        dragonx.approve(UNISWAP_V3_ROUTER, amountDragonx);
+        dragonX.approve(UNISWAP_V3_ROUTER, amountDragonx);
         // Setup the swap-path, swapp
         bytes memory path = abi.encodePacked(
-            address(dragonx),
+            address(dragonX),
             POOL_FEE,
             address(morpheusToken)
         );
@@ -690,7 +714,7 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
             address token1
         )
     {
-        address _dragonx = address(dragonx);
+        address _dragonx = address(dragonX);
         address _morpheus = address(morpheusToken);
 
         (token0, token1) = _dragonx < _morpheus

@@ -149,7 +149,7 @@ contract Morpheus is ERC20Burnable {
             : (res1, res0);
 
         uint256 dragonXAmount = IUniswapV2Router02(UNISWAP_V2_ROUTER)
-            .getAmountOut(INITIAL_DRAGON_X_FOR_LIQ, resIn, resOut);
+            .getAmountOut(INITIAL_TITAN_X_FOR_LIQ, resIn, resOut);
         uint256 morpheusAmount = INITIAL_LP_MINT;
 
         (address token0, address token1) = _dragonX < _morpheus

@@ -139,7 +139,7 @@ contract MorpheusMinting {
 
         if (block.timestamp > endsAt) revert CycleIsOver();
 
-        uint256 adjustedAmount = _burnAndSendToGenesis(_amount);
+        uint256 adjustedAmount = _vaultAndSendToGenesis(_amount);
         uint256 morpheusAmount = (_amount * getRatioForCycle(currentCycle)) /
             1e18;
 
@@ -176,7 +176,7 @@ contract MorpheusMinting {
 
     /* == INTERNAL/PRIVATE == */
 
-    function _burnAndSendToGenesis(
+    function _vaultAndSendToGenesis(
         uint256 _amount
     ) internal returns (uint256 newAmount) {
         if (!buyAndBurn.liquidityAdded()) return _amount;
@@ -188,7 +188,7 @@ contract MorpheusMinting {
                 Math.Rounding.Ceil
             );
             uint256 titanXToVault = _amount.mulDiv(
-                TITAN_X_VAULT_BPS,
+                DRAGON_X_VAULT_BPS,
                 BPS_DENOM,
                 Math.Rounding.Ceil
             );
