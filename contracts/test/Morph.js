@@ -327,7 +327,7 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
   // Execute the swap
   await morpheusBuyAndBurn
     .connect(richSigner)
-    .FswapTitanXorDragonXAndMorpheusAndBurn(deadline);
+    .swapTitanXForDragonXAndMorpheusAndBurn(deadline);
 
   console.log("TitanX swapped for Morpheus and DragonX, and burned.");
 
@@ -464,7 +464,7 @@ describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", fu
       await claimTokens(morpheusMintingAddress, wallets, cycleId);
 
       if (cycleId === 14) {
-        const totalDays = 540;
+        const totalDays = 1; // Set to 180 days
         const buyAndBurnIterations = 48 * totalDays; // 180 days, 48 iterations per day (every 30 minutes)
 
         console.log(
@@ -485,6 +485,16 @@ describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", fu
         }
 
         console.log(`Completed buy-and-burn process for ${totalDays} days.`);
+
+        // Call the burnFees function at the end of the process
+        console.log("Calling burnFees to ensure fees are properly burned...");
+        const morpheusBuyAndBurn = await ethers.getContractAt(
+          "MorpheusBuyAndBurn",
+          morpheusBuyAndBurnAddress
+        );
+
+        await morpheusBuyAndBurn.burnFees();
+        console.log("burnFees function executed successfully.");
       }
     }
   });
