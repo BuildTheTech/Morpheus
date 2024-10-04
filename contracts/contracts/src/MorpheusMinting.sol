@@ -101,12 +101,7 @@ contract MorpheusMinting {
         uint32 _startTimestamp
     ) payable {
         if (_buyAndBurn == address(0)) revert InvalidInput();
-
-        // bool is2PmUTC = (_startTimestamp % 1 days) == 14 hours;
-        // bool isFriday = ((block.timestamp / 1 days + 4) % 7) == 5;
-
-        // if (!is2PmUTC || !isFriday) revert InvalidStartTime();
-
+        
         startTimestamp = _startTimestamp;
         morpheus = Morpheus(msg.sender);
         titanX = IERC20(_titanX);
