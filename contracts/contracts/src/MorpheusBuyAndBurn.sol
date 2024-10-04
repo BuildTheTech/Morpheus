@@ -400,16 +400,8 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
      * @notice Gets the daily TitanX allocation
      * @return dailyBPSAllocation The daily allocation in basis points
      */
-    function getDailyTitanXAllocation(
-        uint8 weekDay
-    ) public pure returns (uint32 dailyBPSAllocation) {
-        dailyBPSAllocation = 211;
-
-        if (weekDay == 5 || weekDay == 6) {
-            dailyBPSAllocation = 211;
-        } else if (weekDay == 4) {
-            dailyBPSAllocation = 211;
-        }
+    function getDailyTitanXAllocation() public view returns (uint32 dailyBPSAllocation) {
+        dailyBPSAllocation = uint32(DAILY_ALLOCATION);
     }
     
     /**
