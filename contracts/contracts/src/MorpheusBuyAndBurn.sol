@@ -264,7 +264,7 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
     }
 
     /**
-     * @notice Allows slippage admin to update daily allocation
+     * @notice Allows owner to update daily allocation
      * @param _newDailyAllocation The new daily allocation
      */
     function setDailyAllocation(uint256 _newDailyAllocation) public onlyOwner {
