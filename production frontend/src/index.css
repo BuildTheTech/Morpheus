@@ -1,0 +1,68 @@
+@import url("https://fonts.googleapis.com/css2?family=Sen:wght@400..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sen:wght@400..800&family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "OCR A Std";
+  src: url("/assets/font/ocr-a-std/OCRAStd.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: "OCR A Std", sans-serif;
+  background-color: #000;
+  /* background-image: url(../public/assets/images/bg.png); */
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  scroll-behavior: smooth;
+}
+
+.sen-font {
+  font-family: "Sen", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+.urbanist-font {
+  font-family: "Urbanist", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+.container {
+  @apply mx-auto max-w-[1344px] px-[12px] sm:px-[24px] lg:px-[48px];
+}
+
+.gd-btn {
+  border: 1.2px solid #12960a;
+  background: linear-gradient(180deg, #067109 0%, #1ab61e 100%);
+  box-shadow: 0px 4.8px 4.8px 0px rgba(0, 0, 0, 0.25);
+}
+
+.gd-btn:hover {
+  background: linear-gradient(180deg, #1ab61e 0%, #067109 100%);
+}
+
+.head-h4 {
+  @apply text-white font-normal text-[20px] sm:text-[28px] leading-normal;
+}
+
+.box {
+  border-radius: 16px;
+  border: 2.4px solid rgba(6, 174, 11, 0.5);
+  background: linear-gradient(180deg, #051805 0%, #030d03 100%);
+  box-shadow: 0px 4.8px 12px 0px rgba(0, 0, 0, 0.25);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.dark-box {
+  border-radius: 16px;
+  border: 1px solid rgba(18, 150, 10, 0.5);
+  background: #030d03;
+  box-shadow: 0px 4.8px 4.8px 0px rgba(0, 0, 0, 0.25) inset;
+}
