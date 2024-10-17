@@ -18,7 +18,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://rpc.ankr.com/eth", // Ethereum Mainnet RPC URL
+        url: "https://eth.drpc.org", // Ethereum Mainnet RPC URL
       },
     },
   },

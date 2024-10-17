@@ -9,7 +9,7 @@ async function forkEthereumMainnet() {
     params: [
       {
         forking: {
-          jsonRpcUrl: "https://rpc.ankr.com/eth",
+          jsonRpcUrl: "https://eth.drpc.org",
         },
       },
     ],
@@ -98,7 +98,7 @@ async function mintTokens(morpheusMintingAddress, wallets, cycleId) {
     morpheusMintingAddress
   );
 
-  const mintAmount = ethers.parseUnits("1000000000", 18);
+  const mintAmount = ethers.parseUnits("1400000000", 18);
   const titanXAddress = "0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1";
   const titanX = await ethers.getContractAt("ERC20", titanXAddress);
 
@@ -403,7 +403,7 @@ describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", fu
   let morpheusMintingAddress;
   let morpheusBuyAndBurnAddress;
   const ethAmount = ethers.parseEther("1");
-  const titanXAmount = ethers.parseUnits("14000000000", 18);
+  const titanXAmount = ethers.parseUnits("18000000000", 18);
   const richAccount = "0xe5e0C13133782d967B002B3400E6Ebea5d9814C0";
 
   before(async function () {
