@@ -174,7 +174,6 @@ contract MorpheusMinting {
     function _vaultAndSendToGenesis(
         uint256 _amount
     ) internal returns (uint256 newAmount) {
-        if (!buyAndBurn.liquidityAdded()) return _amount;
 
         unchecked {
             uint256 titanXForGenesis = _amount.mulDiv(
