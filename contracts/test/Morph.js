@@ -53,25 +53,19 @@ async function fundWallets(wallets, ethAmount, titanXAmount, richAccount) {
 
 async function deployMorpheusContracts() {
   console.log("Deploying Morpheus contract...");
-
-  // Fetch the current block timestamp from the network
   const currentTimestamp = (await ethers.provider.getBlock("latest")).timestamp;
-
-  console.log(`Current network timestamp: ${currentTimestamp}`);
 
   const Morpheus = await ethers.getContractFactory("Morpheus");
 
-  // Deploy the contract using the current timestamp
   const morpheus = await Morpheus.deploy(
-    currentTimestamp, // Use current block timestamp
-    currentTimestamp, // Use current block timestamp
+    currentTimestamp,
+    currentTimestamp,
     "0x25215d9ba4403b3DA77ce50606b54577a71b7895",
     "0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1",
     "0x96a5399D07896f757Bd4c6eF56461F58DB951862",
     "0xe5e0C13133782d967B002B3400E6Ebea5d9814C0"
   );
 
-  // Fetch Morpheus contract's minting and buyAndBurn addresses
   const morpheusMintingAddress = await morpheus.minting();
   console.log(
     `MorpheusMinting contract deployed at: ${morpheusMintingAddress}`
@@ -82,7 +76,6 @@ async function deployMorpheusContracts() {
     `MorpheusBuyAndBurn contract deployed at: ${morpheusBuyAndBurnAddress}`
   );
 
-  // Return the contract instances and addresses
   return {
     morpheus,
     morpheusMintingAddress,
@@ -98,7 +91,7 @@ async function mintTokens(morpheusMintingAddress, wallets, cycleId) {
     morpheusMintingAddress
   );
 
-  const mintAmount = ethers.parseUnits("1400000000", 18);
+  const mintAmount = ethers.parseUnits("1800000000", 18);
   const titanXAddress = "0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1";
   const titanX = await ethers.getContractAt("ERC20", titanXAddress);
 
@@ -183,8 +176,6 @@ async function addLiquidityToMorpheusDragonxPool(morpheusBuyAndBurnAddress) {
 
   const richSigner = await ethers.provider.getSigner(richAccount);
 
-  //await morpheusBuyAndBurn.connect(richSigner).addLiquidityToMorpheusDragonxPool(deadline);
-
   console.log("Liquidity added.");
 
   await network.provider.request({
@@ -210,14 +201,12 @@ async function checkUniswapV3PairBalances(morpheus) {
   console.log(`Current sqrtPriceX96: ${slot0.sqrtPriceX96.toString()}`);
   console.log(`Current liquidity: ${ethers.formatUnits(liquidity, 18)}`);
 
-  // Get the token addresses
   const token0Address = await pairContract.token0();
   const token1Address = await pairContract.token1();
 
   console.log(`Token 0 Address: ${token0Address}`);
   console.log(`Token 1 Address: ${token1Address}`);
 
-  // Get the balance of both tokens in the pool
   const token0 = await ethers.getContractAt(
     "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20",
     token0Address
@@ -256,8 +245,7 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
     dragonXPool
   );
 
-  // Get the TitanX/DragonX pool address
-  const titanXDragonXPool = "0x25215d9ba4403b3DA77ce50606b54577a71b7895"; // Replace with your actual TitanX/DragonX Uniswap V3 pool address
+  const titanXDragonXPool = "0x25215d9ba4403b3DA77ce50606b54577a71b7895";
   const titanXDragonXPairContract = await ethers.getContractAt(
     "IUniswapV3Pool",
     titanXDragonXPool
@@ -269,11 +257,9 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
   const token0 = await ethers.getContractAt("ERC20", token0Address);
   const token1 = await ethers.getContractAt("ERC20", token1Address);
 
-  // Log the TitanX balance before the swap
   let titanXBalanceBefore = await titanX.balanceOf(morpheusBuyAndBurnAddress);
   console.log(`TitanX balance before swap: ${titanXBalanceBefore}`);
 
-  // Log the Morpheus and DragonX balances in the Morpheus/DragonX pool before swap
   const token0BalanceBefore = await token0.balanceOf(dragonXPool);
   const token1BalanceBefore = await token1.balanceOf(dragonXPool);
   console.log(
@@ -289,7 +275,6 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
     )}`
   );
 
-  // Log the TitanX and DragonX balances in the TitanX/DragonX pool before swap
   const titanXBalanceInPoolBefore = await titanX.balanceOf(titanXDragonXPool);
   const dragonXBalanceInPoolBefore = await token1.balanceOf(titanXDragonXPool);
 
@@ -309,7 +294,7 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
   const currentBlock = await ethers.provider.getBlock("latest");
   const currentTimestamp = currentBlock.timestamp;
 
-  const deadline = currentTimestamp + 60 * 10; // Set deadline to 10 minutes from now
+  const deadline = currentTimestamp + 60 * 10;
 
   console.log(
     `Setting deadline to: ${deadline} (current block timestamp + 10 minutes)`
@@ -322,24 +307,20 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
 
   const richSigner = await ethers.provider.getSigner(richAccount);
 
-  // Execute the swap
   await morpheusBuyAndBurn
     .connect(richSigner)
     .swapTitanXForDragonXAndMorpheusAndBurn(deadline);
 
   console.log("TitanX swapped for Morpheus and DragonX, and burned.");
 
-  // Stop impersonating the rich account
   await network.provider.request({
     method: "hardhat_stopImpersonatingAccount",
     params: [richAccount],
   });
 
-  // Log the TitanX balance after the swap
   let titanXBalanceAfter = await titanX.balanceOf(morpheusBuyAndBurnAddress);
   console.log(`TitanX balance after swap: ${titanXBalanceAfter}`);
 
-  // Log the Morpheus and DragonX balances in the Morpheus/DragonX pool after swap
   const token0BalanceAfter = await token0.balanceOf(dragonXPool);
   const token1BalanceAfter = await token1.balanceOf(dragonXPool);
   console.log(
@@ -355,7 +336,6 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
     )}`
   );
 
-  // Log the TitanX and DragonX balances in the TitanX/DragonX pool after swap
   const titanXBalanceInPoolAfter = await titanX.balanceOf(
     titanXDragonXPairContract
   );
@@ -375,7 +355,6 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
     )}`
   );
 
-  // Calculate and log the changes in balances for TitanX/DragonX pool
   const titanXChange = titanXBalanceInPoolAfter - titanXBalanceInPoolBefore;
   const dragonXChange = dragonXBalanceInPoolAfter - dragonXBalanceInPoolBefore;
 
@@ -394,14 +373,14 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
 }
 
 describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", function () {
-  this.timeout(100000000); // Increase the timeout to 2 minutes
+  this.timeout(100000000);
 
   let wallets;
   let morpheus;
   let morpheusMintingAddress;
   let morpheusBuyAndBurnAddress;
   const ethAmount = ethers.parseEther("1");
-  const titanXAmount = ethers.parseUnits("18000000000", 18);
+  const titanXAmount = ethers.parseUnits("26000000000", 18);
   const richAccount = "0xe5e0C13133782d967B002B3400E6Ebea5d9814C0";
 
   before(async function () {
@@ -414,14 +393,14 @@ describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", fu
     await fundWallets(wallets, ethAmount, titanXAmount, richAccount);
 
     const contracts = await deployMorpheusContracts();
-    morpheus = contracts.morpheus; // Store the morpheus contract
+    morpheus = contracts.morpheus;
     morpheusMintingAddress = contracts.morpheusMintingAddress;
     morpheusBuyAndBurnAddress = contracts.morpheusBuyAndBurnAddress;
   });
 
   it("Should perform 14 cycles of minting, liquidity check after cycle 5, and claiming", async function () {
     const totalCycles = 14;
-    const buyAndBurnIterations = 48; // Number of times buyAndBurn should be called per cycle
+    const buyAndBurnIterations = 48;
 
     for (let cycleId = 1; cycleId <= totalCycles; cycleId++) {
       console.log(`\n------ Cycle ${cycleId} ------`);
@@ -431,17 +410,13 @@ describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", fu
       await checkAmountToClaim(morpheusMintingAddress, wallets, cycleId);
 
       if (cycleId === 5) {
-        // After cycle 5, add liquidity to Morpheus/DragonX pool
         await addLiquidityToMorpheusDragonxPool(morpheusBuyAndBurnAddress);
-
-        // Pass the morpheus contract to checkUniswapV3PairBalances
         await checkUniswapV3PairBalances(morpheus);
       }
 
       if (cycleId >= 6) {
         console.log(`Starting buy-and-burn iterations for cycle ${cycleId}...`);
 
-        // Call buyAndBurn function 48 times every 30 minutes
         for (let i = 1; i <= buyAndBurnIterations; i++) {
           console.log(`Iteration ${i}: Calling buy and burn...`);
 
@@ -451,19 +426,18 @@ describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", fu
           );
 
           console.log("Advancing time by 30 minutes...");
-          await network.provider.send("evm_increaseTime", [30 * 60]); // 30 minutes
+          await network.provider.send("evm_increaseTime", [30 * 60]);
           await network.provider.send("evm_mine");
         }
 
         console.log(`Completed buy-and-burn iterations for cycle ${cycleId}.`);
       }
 
-      // After the buy and burn process, claim the tokens
       await claimTokens(morpheusMintingAddress, wallets, cycleId);
 
       if (cycleId === 14) {
-        const totalDays = 1; // Set to 180 days
-        const buyAndBurnIterations = 48 * totalDays; // 180 days, 48 iterations per day (every 30 minutes)
+        const totalDays = 540;
+        const buyAndBurnIterations = 48 * totalDays;
 
         console.log(
           `Starting buy-and-burn process for a total of ${totalDays} days...`
@@ -478,13 +452,12 @@ describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", fu
           );
 
           console.log("Advancing time by 30 minutes...");
-          await network.provider.send("evm_increaseTime", [30 * 60]); // 30 minutes
+          await network.provider.send("evm_increaseTime", [30 * 60]);
           await network.provider.send("evm_mine");
         }
 
         console.log(`Completed buy-and-burn process for ${totalDays} days.`);
 
-        // Call the burnFees function at the end of the process
         console.log("Calling burnFees to ensure fees are properly burned...");
         const morpheusBuyAndBurn = await ethers.getContractAt(
           "MorpheusBuyAndBurn",

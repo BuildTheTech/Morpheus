@@ -127,6 +127,7 @@ contract MorpheusMinting {
      */
     function mint(uint256 _amount) external {
         if (_amount == 0) revert InvalidInput();
+        titanX.safeTransferFrom(msg.sender, address(this), _amount);
 
         if (block.timestamp < startTimestamp) revert NotStartedYet();
 
@@ -145,7 +146,8 @@ contract MorpheusMinting {
         totalMorpheusMinted = totalMorpheusMinted + morpheusAmount;
         totalTitanXDeposited = totalTitanXDeposited + _amount;
 
-        _distributeToBuyAndBurn(adjustedAmount);
+        titanX.approve(address(buyAndBurn), _amount);
+        buyAndBurn.distributeTitanXForBurning(adjustedAmount);
 
         if (!buyAndBurn.liquidityAdded() && titanX.balanceOf(address(buyAndBurn)) >= INITIAL_TITAN_X_FOR_LIQ) {
             buyAndBurn.addLiquidityToMorpheusDragonxPool(uint32(block.timestamp));
@@ -193,24 +195,15 @@ contract MorpheusMinting {
 
             newAmount = _amount - titanXForGenesis - titanXToVault;
 
-            titanX.safeTransferFrom(
-                msg.sender,
+            titanX.safeTransfer(
                 DRAGON_X_ADDRESS,
                 titanXToVault
             );
-            titanX.safeTransferFrom(
-                msg.sender,
+            titanX.safeTransfer(
                 GENESIS_WALLET,
                 titanXForGenesis
             );
         }
-    }
-
-    function _distributeToBuyAndBurn(uint256 _amount) internal {
-        titanX.safeTransferFrom(msg.sender, address(this), _amount);
-        titanX.approve(address(buyAndBurn), _amount);
-
-        buyAndBurn.distributeTitanXForBurning(_amount);
     }
 
     function getCurrentMintCycle()
