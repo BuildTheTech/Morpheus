@@ -2,14 +2,14 @@ const { ethers, network } = require("hardhat");
 const { expect } = require("chai");
 
 async function forkEthereumMainnet() {
-  console.log("Forking Ethereum Mainnet...");
+  console.log("Forking Sepolia...");
 
   await network.provider.request({
     method: "hardhat_reset",
     params: [
       {
         forking: {
-          jsonRpcUrl: "https://eth.drpc.org",
+          jsonRpcUrl: "https://sepolia.drpc.org",
         },
       },
     ],
@@ -34,7 +34,7 @@ async function fundWallets(wallets, ethAmount, titanXAmount, richAccount) {
       hexBalance,
     ]);
 
-    const titanXAddress = "0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1";
+    const titanXAddress = "0x553E8dF2F49b4DB69452c9c2bBB13105d5D2147f";
     const titanX = await ethers.getContractAt("ERC20", titanXAddress);
     console.log(
       `Transferring ${ethers.formatUnits(titanXAmount)} TitanX to wallet ${
@@ -65,10 +65,10 @@ async function deployMorpheusContracts() {
   const morpheus = await Morpheus.deploy(
     currentTimestamp, // Use current block timestamp
     currentTimestamp, // Use current block timestamp
-    "0x25215d9ba4403b3DA77ce50606b54577a71b7895",
-    "0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1",
-    "0x96a5399D07896f757Bd4c6eF56461F58DB951862",
-    "0xe5e0C13133782d967B002B3400E6Ebea5d9814C0"
+    "0x6901F8c76C33757B53b8b0703Ffe1917b3dcAa09",
+    "0x553E8dF2F49b4DB69452c9c2bBB13105d5D2147f",
+    "0x5866b5050b825B90a9d54B9d93B85BfcFC8d52Ae",
+    "0x2AE800Ea54342B4d78FeC83479157dd663b5C78E"
   );
 
   // Fetch Morpheus contract's minting and buyAndBurn addresses
@@ -99,7 +99,7 @@ async function mintTokens(morpheusMintingAddress, wallets, cycleId) {
   );
 
   const mintAmount = ethers.parseUnits("1400000000", 18);
-  const titanXAddress = "0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1";
+  const titanXAddress = "0x553E8dF2F49b4DB69452c9c2bBB13105d5D2147f";
   const titanX = await ethers.getContractAt("ERC20", titanXAddress);
 
   for (const wallet of wallets) {
@@ -165,7 +165,7 @@ async function addLiquidityToMorpheusDragonxPool(morpheusBuyAndBurnAddress) {
     "MorpheusBuyAndBurn",
     morpheusBuyAndBurnAddress
   );
-  const richAccount = "0xe5e0C13133782d967B002B3400E6Ebea5d9814C0";
+  const richAccount = "0x2AE800Ea54342B4d78FeC83479157dd663b5C78E";
 
   const currentBlock = await ethers.provider.getBlock("latest");
   const currentTimestamp = currentBlock.timestamp;
@@ -247,10 +247,10 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
     morpheusBuyAndBurnAddress
   );
 
-  const titanXAddress = "0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1";
+  const titanXAddress = "0x553E8dF2F49b4DB69452c9c2bBB13105d5D2147f";
   const titanX = await ethers.getContractAt("ERC20", titanXAddress);
 
-  const richAccount = "0xe5e0C13133782d967B002B3400E6Ebea5d9814C0";
+  const richAccount = "0x2AE800Ea54342B4d78FeC83479157dd663b5C78E";
   const dragonXPool = await morpheus.dragonXMorpheusPool();
 
   const pairContract = await ethers.getContractAt(
@@ -259,7 +259,7 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
   );
 
   // Get the TitanX/DragonX pool address
-  const titanXDragonXPool = "0x25215d9ba4403b3DA77ce50606b54577a71b7895"; // Replace with your actual TitanX/DragonX Uniswap V3 pool address
+  const titanXDragonXPool = "0xbF41739157A42f9F332eaff3F21288b57c9bf6F7"; // Replace with your actual TitanX/DragonX Uniswap V3 pool address
   const titanXDragonXPairContract = await ethers.getContractAt(
     "IUniswapV3Pool",
     titanXDragonXPool
@@ -327,7 +327,7 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
   // Execute the swap
   await morpheusBuyAndBurn
     .connect(richSigner)
-    .swapTitanXForDragonXAndMorpheusAndBurn(deadline);
+    .swapTitanXForDragonXAndMorpheusAndBurn();
 
   console.log("TitanX swapped for Morpheus and DragonX, and burned.");
 
@@ -404,7 +404,7 @@ describe("Deployment and 14 Cycles of Minting/Claiming with Liquidity Check", fu
   let morpheusBuyAndBurnAddress;
   const ethAmount = ethers.parseEther("1");
   const titanXAmount = ethers.parseUnits("18000000000", 18);
-  const richAccount = "0xe5e0C13133782d967B002B3400E6Ebea5d9814C0";
+  const richAccount = "0x2AE800Ea54342B4d78FeC83479157dd663b5C78E";
 
   before(async function () {
     await forkEthereumMainnet();

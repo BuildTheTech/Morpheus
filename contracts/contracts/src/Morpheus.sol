@@ -17,11 +17,6 @@ import {Math} from "../lib/openzeppelin-contracts/contracts/utils/math/Math.sol"
 import {IUniswapV3Pool} from "../lib/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {INonfungiblePositionManager} from "../lib/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 
-/* = UNIV2 = */
-
-import {IUniswapV2Router02} from "../lib/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import {IUniswapV2Pair} from "../lib/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
-
 import "./const/BuyAndBurnConst.sol";
 
 /**
@@ -64,7 +59,7 @@ contract Morpheus is ERC20Burnable {
         address _titanX,
         address _dragonX,
         address _owner
-    ) payable ERC20("MORPHEUS", "MORPH") {
+    ) payable ERC20("Morpheus", "MORPH") {
         buyAndBurn = new MorpheusBuyAndBurn(
             _morpheusBuyAndBurnStartTimestamp,
             _dragonXTitanXPool,

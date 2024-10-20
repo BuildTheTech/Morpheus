@@ -193,7 +193,7 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
 
         burnMorpheus();
 
-        TransferHelper.safeTransfer(address(dragonX), DEAD_ADDR, dragonxBurnAmount);
+        TransferHelper.safeTransfer(address(dragonX), DRAGONX_BURN_ADDRESS, dragonxBurnAmount);
         TransferHelper.safeTransfer(address(titanX), msg.sender, incentive);
 
         totalDragonxBurnt += dragonxBurnAmount;
@@ -208,10 +208,12 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
      */
     function addLiquidityToMorpheusDragonxPool(
         uint32 _deadline
-    ) external onlyOwner {
+    ) external {
         if (liquidityAdded) revert LiquidityAlreadyAdded();
         if (titanX.balanceOf(address(this)) < INITIAL_TITAN_X_FOR_LIQ)
             revert NotEnoughTitanXForLiquidity();
+        if (msg.sender != address(morpheusToken.minting()))
+            revert OnlyMinting();
 
         liquidityAdded = true;
 
@@ -472,11 +474,12 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
      * @notice Swaps Dragonx tokens for Morpheus tokens
      * @param amountTitanx The amount of Dragonx tokens
      * @param _deadline The deadline for when the swap must be executed
+     * @return _dragonXAmount The amount of Morpheus tokens received
      */
     function _swapTitanxForDragonx(
         uint256 amountTitanx,
         uint256 _deadline
-    ) private returns (uint256 _titanAmount) {
+    ) private returns (uint256 _dragonXAmount) {
         // wake-disable-next-line
         titanX.approve(UNISWAP_V3_ROUTER, amountTitanx);
         // Setup the swap-path, swapp
@@ -512,12 +515,12 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
      * @notice Swaps Dragonx tokens for Morpheus tokens
      * @param amountDragonx The amount of Dragonx tokens
      * @param _deadline The deadline for when the swap must be executed
-     * @return _titanAmount The amount of TitanX tokens received
+     * @return _morpheusAmount The amount of Morpheus tokens received
      */
     function _swapDragonxForMorpheus(
         uint256 amountDragonx,
         uint256 _deadline
-    ) private returns (uint256 _titanAmount) {
+    ) private returns (uint256 _morpheusAmount) {
         // wake-disable-next-line
         dragonX.approve(UNISWAP_V3_ROUTER, amountDragonx);
         // Setup the swap-path, swapp

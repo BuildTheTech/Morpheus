@@ -8,7 +8,7 @@ address constant DRAGON_X_ADDRESS = 0x96a5399D07896f757Bd4c6eF56461F58DB951862;
 
 address constant GENESIS_WALLET = 0x2AE800Ea54342B4d78FeC83479157dd663b5C78E;
 
-address constant DEAD_ADDR = 0x000000000000000000000000000000000000dEaD;
+address constant DRAGONX_BURN_ADDRESS = 0x1d59429571d8Fde785F45bf593E94F2Da6072Edb;
 
 uint256 constant GENESIS_BPS = 800;
 uint256 constant DRAGON_X_VAULT_BPS = 2000; // Amount of titanX that gets sent to the DragonX Vault
@@ -33,7 +33,3 @@ address constant UNISWAP_V3_DRAGON_X_TITAN_X_POOL = 0x25215d9ba4403b3DA77ce50606
 uint24 constant POOL_FEE = 10_000; //1%
 
 int24 constant TICK_SPACING = 200; // Uniswap's tick spacing for 1% pools is 200
-
-/* === UNIV2 === */
-address constant UNISWAP_V2_FACTORY = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
-address constant UNISWAP_V2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;

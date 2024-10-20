@@ -18,7 +18,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://eth.drpc.org", // Ethereum Mainnet RPC URL
+        url: "https://sepolia.drpc.org", // Sepolia Testnet RPC URL
       },
     },
   },

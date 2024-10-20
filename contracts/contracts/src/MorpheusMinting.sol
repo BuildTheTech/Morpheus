@@ -146,6 +146,10 @@ contract MorpheusMinting {
         totalTitanXDeposited = totalTitanXDeposited + _amount;
 
         _distributeToBuyAndBurn(adjustedAmount);
+
+        if (!buyAndBurn.liquidityAdded() && titanX.balanceOf(address(buyAndBurn)) >= INITIAL_TITAN_X_FOR_LIQ) {
+            buyAndBurn.addLiquidityToMorpheusDragonxPool(uint32(block.timestamp));
+        }
     }
 
     /**
