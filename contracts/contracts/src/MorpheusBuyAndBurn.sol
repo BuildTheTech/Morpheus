@@ -99,7 +99,7 @@ contract MorpheusBuyAndBurn is ReentrancyGuard, Ownable2Step {
     uint8 titanxToDragonxSlippage = 90;
 
     ///@notice The daily percentage of titanX used in buy and burn
-    uint256 public DAILY_ALLOCATION = 211;
+    uint256 public DAILY_ALLOCATION = 100;
 
     /* == EVENTS == */
 
