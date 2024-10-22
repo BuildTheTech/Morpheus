@@ -135,7 +135,7 @@ contract MorpheusMinting {
 
         if (block.timestamp > endsAt) revert CycleIsOver();
 
-        uint256 adjustedAmount = _vaultAndSendToGenesis(_amount);
+        uint256 adjustedAmount = _vaultAndSendToGenesisAndPrize(_amount);
         uint256 morpheusAmount = (_amount * getRatioForCycle(currentCycle)) /
             1e18;
 
@@ -177,11 +177,16 @@ contract MorpheusMinting {
 
     /* == INTERNAL/PRIVATE == */
 
-    function _vaultAndSendToGenesis(
+    function _vaultAndSendToGenesisAndPrize(
         uint256 _amount
     ) internal returns (uint256 newAmount) {
 
         unchecked {
+            uint256 titanXForPrize = _amount.mulDiv(
+                PRIZE_BPS,
+                BPS_DENOM,
+                Math.Rounding.Ceil
+            );
             uint256 titanXForGenesis = _amount.mulDiv(
                 GENESIS_BPS,
                 BPS_DENOM,
@@ -193,8 +198,11 @@ contract MorpheusMinting {
                 Math.Rounding.Ceil
             );
 
-            newAmount = _amount - titanXForGenesis - titanXToVault;
-
+            newAmount = _amount - titanXForGenesis - titanXToVault - titanXForPrize;
+            titanX.safeTransfer(
+                PRIZE_WALLET,
+                titanXForPrize
+            );
             titanX.safeTransfer(
                 DRAGON_X_ADDRESS,
                 titanXToVault

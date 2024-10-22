@@ -7,11 +7,13 @@ address constant TITAN_X_ADDRESS = 0xF19308F923582A6f7c465e5CE7a9Dc1BEC6665B1;
 address constant DRAGON_X_ADDRESS = 0x96a5399D07896f757Bd4c6eF56461F58DB951862;
 
 address constant GENESIS_WALLET = 0x2AE800Ea54342B4d78FeC83479157dd663b5C78E;
+address constant PRIZE_WALLET = 0x3086985FdDb017E8e3D0AbcC610d4Ab417f4E492;
 
 address constant DRAGONX_BURN_ADDRESS = 0x1d59429571d8Fde785F45bf593E94F2Da6072Edb;
 
 uint256 constant GENESIS_BPS = 800;
-uint256 constant DRAGON_X_VAULT_BPS = 2000; // Amount of titanX that gets sent to the DragonX Vault
+uint256 constant PRIZE_BPS = 1000; // Amount of titanX that gets sent to prize wallet
+uint256 constant DRAGON_X_VAULT_BPS = 1000; // Amount of titanX that gets sent to the DragonX Vault
 uint256 constant DRAGON_X_BURN_BPS = 2000; // Amount of dragonX that gets burned
 uint256 constant BPS_DENOM = 10_000;
 
