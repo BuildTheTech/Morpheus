@@ -1,3 +1,6 @@
+@use "sass:list";
+@use "sass:math";
+@use "sass:string";
 $COLUMNS: 99;
 
 // Colors:
@@ -15,15 +18,14 @@ $white: rgb(255, 255, 255);
   font-weight: normal;
   font-style: normal;
 
-  src:
-    url("https://raw.githubusercontent.com/UstymUkhman/UstymUkhman/master/public/fonts/matrix-code/Matrix-Code-NFI.otf?raw=true")
+  src: url("https://raw.githubusercontent.com/UstymUkhman/UstymUkhman/master/public/fonts/matrix-code/Matrix-Code-NFI.otf?raw=true")
       format("opentype"),
     url("https://raw.githubusercontent.com/UstymUkhman/UstymUkhman/master/public/fonts/matrix-code/Matrix-Code-NFI.ttf?raw=true")
       format("truetype");
 }
 
 @function getRandom($min: 1, $max: 100) {
-  @return floor(random() * ($max - $min + 1)) + $min;
+  @return math.floor(math.random() * ($max - $min + 1)) + $min;
 }
 
 * {
@@ -80,7 +82,7 @@ div.code-container {
       $code-sizes: (12, 25, 60);
 
       @for $i from 1 through 3 {
-        $current-size: #{nth($code-sizes, $i)};
+        $current-size: #{list.nth($code-sizes, $i)};
         $margin: -0.5%;
         $z: 1;
 
@@ -144,7 +146,7 @@ div.code-container {
         }
 
         @for $i from 1 through 3 {
-          $current-size: #{nth($code-sizes, $i)};
+          $current-size: #{list.nth($code-sizes, $i)};
 
           &.code-size-#{$current-size} {
             $size: #{$current-size}px;
@@ -162,7 +164,7 @@ div.code-container {
         $duration: getRandom(1000ms, 15000ms);
 
         // position: absolute;
-        left: unquote("#{$i}%");
+        left: string.unquote("#{$i}%");
         animation: drop $duration linear $delay infinite;
       }
     }

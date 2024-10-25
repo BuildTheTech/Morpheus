@@ -66,3 +66,161 @@ body {
   background: #030d03;
   box-shadow: 0px 4.8px 4.8px 0px rgba(0, 0, 0, 0.25) inset;
 }
+
+.morpheus-text-bg {
+  background-image: url(/assets/images/morpheus-text-bg.svg);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.hero-man-bg {
+  /* background-image: url(../public/assets/images/hero-man-bg.png); */
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50px;
+  filter: drop-shadow(0 -2px 30px #06ae0c96);
+}
+
+.video-container {
+  margin-top: 9%;
+  position: relative;
+  width: 45%;
+  padding-top: 36.13%; /* 100 / 2.93 = 34.13%, to maintain a 2.93:1 aspect ratio */
+  overflow: hidden;
+}
+
+.video-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Or 'contain' if you prefer */
+}
+
+html {
+  scroll-behavior: smooth !important;
+}
+button {
+  outline: none !important;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: #067109;
+  border-radius: 4px;
+}
+
+.Toastify__toast {
+  padding: 1px;
+  min-height: inherit;
+  border-radius: 16px;
+
+  .Toastify__toast-body {
+    border-radius: 16px;
+    padding: 0;
+  }
+
+  .Toastify__toast-icon {
+    display: none;
+  }
+
+  .toast-body-wrapper {
+    background: url("/assets/images/toastify-bg.png") center center no-repeat;
+    background-size: cover;
+    position: relative;
+    border-radius: 16px;
+    color: white;
+    font-size: 14px;
+    line-height: 30px;
+    font-weight: 500;
+  }
+
+  .toast-body {
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    background: #0000007f;
+    padding: 8px 16px;
+    z-index: 1;
+
+    &.toast-error {
+      border: 1px solid #ff040480;
+
+      .divider {
+        border-top: 1px solid #ff040480;
+      }
+
+      .toast-title::before {
+        background: url(/assets/images/toast-error.svg) no-repeat;
+      }
+    }
+
+    &.toast-success {
+      border: 1px solid #06ae0b80;
+
+      .divider {
+        border-top: 1px solid #06ae0b80;
+      }
+
+      .toast-title::before {
+        background: url(/assets/images/toast-success.svg) no-repeat;
+      }
+    }
+
+    .toast-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+
+      &::before {
+        content: "";
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+      }
+
+      .divider {
+        flex: 1;
+      }
+
+      button {
+        width: 16px;
+        height: 16px;
+        background: url("/assets/images/toast-close.svg");
+        cursor: pointer;
+        z-index: 1;
+      }
+    }
+
+    .toast-content {
+      white-space: normal;
+    }
+
+    .green {
+      color: #06ae0b;
+    }
+  }
+
+  .toast-content {
+    white-space: nowrap;
+  }
+}
