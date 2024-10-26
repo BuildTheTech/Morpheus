@@ -240,6 +240,9 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
   const richAccount = "0xe5e0C13133782d967B002B3400E6Ebea5d9814C0";
   const dragonXPool = await morpheus.dragonXMorpheusPool();
 
+  const genesisWallet = "0xEe30c3d642ea92aAb46c81AB5367E3EF048b6E5E";
+  const raffleWallet = "0x8D81a541CeB500A25ad15De5b692B5D0201DfAa0";
+
   const pairContract = await ethers.getContractAt(
     "IUniswapV3Pool",
     dragonXPool
@@ -258,7 +261,25 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
   const token1 = await ethers.getContractAt("ERC20", token1Address);
 
   let titanXBalanceBefore = await titanX.balanceOf(morpheusBuyAndBurnAddress);
-  console.log(`TitanX balance before swap: ${titanXBalanceBefore}`);
+  console.log(`TitanX balance before swap: ${ethers.formatUnits(
+      titanXBalanceBefore,
+      18
+    )}`
+  );
+
+  let genesisTitanXBalanceBefore = await titanX.balanceOf(genesisWallet);
+  console.log(`Genesis TitanX balance before swap: ${ethers.formatUnits(
+      genesisTitanXBalanceBefore,
+      18
+    )}`
+  );
+  
+  let raffleTitanXBalanceBefore = await titanX.balanceOf(raffleWallet);
+  console.log(`Raffle TitanX balance before swap: ${ethers.formatUnits(
+      raffleTitanXBalanceBefore,
+      18
+    )}`
+  );
 
   const token0BalanceBefore = await token0.balanceOf(dragonXPool);
   const token1BalanceBefore = await token1.balanceOf(dragonXPool);
@@ -319,7 +340,25 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
   });
 
   let titanXBalanceAfter = await titanX.balanceOf(morpheusBuyAndBurnAddress);
-  console.log(`TitanX balance after swap: ${titanXBalanceAfter}`);
+  console.log(`TitanX balance after swap: ${ethers.formatUnits(
+      titanXBalanceAfter,
+      18
+    )}`
+  );
+
+  let genesisTitanXBalanceAfter = await titanX.balanceOf(genesisWallet);
+  console.log(`Genesis TitanX balance after swap: ${ethers.formatUnits(
+      genesisTitanXBalanceAfter,
+      18
+    )}`
+  );
+  
+  let raffleTitanXBalanceAfter = await titanX.balanceOf(raffleWallet);
+  console.log(`Raffle TitanX balance after swap: ${ethers.formatUnits(
+      raffleTitanXBalanceAfter,
+      18
+    )}`
+  );
 
   const token0BalanceAfter = await token0.balanceOf(dragonXPool);
   const token1BalanceAfter = await token1.balanceOf(dragonXPool);
@@ -354,6 +393,7 @@ async function swapTitanXForDragonXAndMorpheusAndBurn(
       18
     )}`
   );
+  
 
   const titanXChange = titanXBalanceInPoolAfter - titanXBalanceInPoolBefore;
   const dragonXChange = dragonXBalanceInPoolAfter - dragonXBalanceInPoolBefore;
